@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap");
+
 :root {
   --suit-bg-color: #b30000;
   --suit-bg-color: #187318;
@@ -5,6 +7,7 @@
 
   --field-bg-color: #387d38;
 }
+
 body {
   margin: 0;
 }
@@ -30,7 +33,12 @@ body {
 
 .card {
   position: absolute;
-  display: inline-block;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+
   left: 10px;
   top: 10px;
   width: 110px;
@@ -39,17 +47,15 @@ body {
   border-radius: 5px;
   user-select: none;
   background-color: white;
+
+  font-family: "Noto Sans JP", sans-serif;
 }
 
-.card > * {
-  color: black;
-}
-
-.card.red > * {
+.card.red {
   color: red;
 }
 
-.card.black > * {
+.card.black {
   color: black;
 }
 
@@ -65,33 +71,24 @@ body {
   display: none;
 }
 
-.left_top_card_name {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-  left: 10px;
-  top: 10px;
+.left_top_card_name,
+.right_bottom_card_name {
+  padding: 10px;
 }
 
-.right_bottom_card_name {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-  right: 10px;
-  bottom: 10px;
+.left_top_card_name {
+  align-self: flex-start;
 }
 
 .center_card_name {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  display: inline-block;
   left: 35px;
   top: 55px;
   font-size: 40px;
   text-align: center;
+}
+
+.right_bottom_card_name {
+  align-self: flex-end;
 }
 
 .deck_close {
