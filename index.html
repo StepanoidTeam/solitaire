@@ -8,6 +8,14 @@
     <script defer src="script.js"></script>
   </head>
   <body>
+    <template id="card-template">
+      <div class="card">
+        <div class="card__corner-top-left">A♠</div>
+        <div class="card__center">♠</div>
+        <div class="card__corner-bottom-right">A♠</div>
+      </div>
+    </template>
+
     <div class="field">
       <div class="card_place">
         <div class="decks">
@@ -22,7 +30,7 @@
           <div class="holder suit_4"></div>
         </div>
 
-        <div class="cols">
+        <div class="piles">
           <div class="holder col_1"></div>
           <div class="holder col_2"></div>
           <div class="holder col_3"></div>

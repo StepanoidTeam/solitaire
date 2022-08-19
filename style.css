@@ -99,6 +99,7 @@ body {
 .deck_close_suit {
   z-index: 100;
 
+  /* todo: remove duplicate styles */
   border: 1px solid black;
   box-shadow: inset 0px 0px 0px 1px #dcdcdc, inset 0px 0px 0px 4px white;
 
@@ -116,7 +117,7 @@ body {
   gap: 8px;
 }
 
-.cols {
+.piles {
   position: absolute;
   left: 10px;
   top: 240px;

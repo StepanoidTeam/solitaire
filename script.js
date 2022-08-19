@@ -154,18 +154,22 @@ function Solitaire() {
   }
   // end model
 
+  const cardTemplate = document.querySelector("#card-template");
   // begin view
   function createCard(card) {
-    // todo(vmyshko): use template?
+    const cardDiv = cardTemplate.content.cloneNode(true).firstElementChild;
+
     var cardName = card.name;
-    var suit = cardName.slice(1);
-    var weight = cardName.slice(0, 1);
+    const [weight, suit] = cardName.split("");
+
     var suitGraph = choiceCardPictures(suit);
     var field = document.querySelector(".field");
-    var cardDiv = document.createElement("div");
-    var leftTopCardName = document.createElement("div");
-    var rightBottomCardName = document.createElement("div");
-    var centerCardName = document.createElement("div");
+    // var cardDiv = document.createElement("div");
+    const leftTopCardName = cardDiv.querySelector(".card__corner-top-left");
+    const rightBottomCardName = cardDiv.querySelector(
+      ".card__corner-bottom-right"
+    );
+    const centerCardName = cardDiv.querySelector(".card__center");
 
     if (suit === "h" || suit === "d") {
       cardDiv.classList.add("red");
@@ -174,19 +178,16 @@ function Solitaire() {
     }
 
     card.close = true;
-    cardDiv.classList.add("card");
+
     cardDiv.setAttribute("data-card", cardName);
     cardDiv.classList.add("card_closed");
-    leftTopCardName.classList.add("card__corner-top-left");
-    rightBottomCardName.classList.add("card__corner-bottom-right");
-    centerCardName.classList.add("card__center");
+
     leftTopCardName.innerHTML = weight + suitGraph;
     rightBottomCardName.innerHTML = weight + suitGraph;
     centerCardName.innerHTML = suitGraph;
+
     applyDragDrop(cardDiv);
-    cardDiv.appendChild(leftTopCardName);
-    cardDiv.appendChild(centerCardName);
-    cardDiv.appendChild(rightBottomCardName);
+
     field.appendChild(cardDiv);
     return cardDiv;
   }
@@ -319,12 +320,10 @@ function Solitaire() {
       clickCardNum != undefined &&
       downColumn.length > 0
     ) {
-      downCardSuit = downColumn[clickCardNum].name.slice(1);
-      downCardVal = downColumn[clickCardNum].name.slice(0, 1);
+      [downCardVal, downCardSuit] = downColumn[clickCardNum].name.split("");
     }
     if (upColumn != undefined && upColumn.length > 0) {
-      upCardSuit = upColumn[upColumn.length - 1].name.slice(1);
-      upCardVal = upColumn[upColumn.length - 1].name.slice(0, 1);
+      [upCardVal, upCardSuit] = upColumn[upColumn.length - 1].name.split("");
     }
     downCardVal = changeValueCardToNumber(downCardVal);
     upCardVal = changeValueCardToNumber(upCardVal);
