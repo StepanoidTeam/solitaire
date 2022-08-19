@@ -72,6 +72,10 @@ body {
   display: none;
 }
 
+.card > * {
+  pointer-events: none;
+}
+
 .left_top_card_name,
 .right_bottom_card_name {
   padding: 8px 4px;
