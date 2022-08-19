@@ -18,14 +18,13 @@ body {
   height: 100vh;
 }
 
-.card_place > * {
-  position: absolute;
-  display: inline-block;
-
+.holder {
   width: 110px;
   height: 170px;
 
   border-radius: 5px;
+
+  box-sizing: border-box;
 
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: inset 2px 2px 4px 0px rgba(0, 0, 0, 0.45);
@@ -40,10 +39,10 @@ body {
   justify-content: space-between;
   align-items: center;
 
-  left: 10px;
-  top: 10px;
   width: 110px;
   height: 170px;
+
+  box-sizing: border-box;
   border: 1px solid black;
   border-radius: 5px;
   user-select: none;
@@ -89,20 +88,12 @@ body {
 }
 
 .center_card_name {
-  left: 35px;
-  top: 55px;
   font-size: 40px;
-  text-align: center;
 }
 
 .right_bottom_card_name {
   align-self: flex-end;
   transform: rotate(180deg);
-}
-
-.deck_close {
-  left: 10px;
-  top: 10px;
 }
 
 .deck_close_suit {
@@ -116,64 +107,31 @@ body {
   background-repeat: repeat;
 }
 
-.deck_open {
-  left: 130px;
+.decks {
+  position: absolute;
+  left: 10px;
   top: 10px;
+
+  display: inline-flex;
+  gap: 8px;
 }
 
-.suit_1 {
-  left: 370px;
-  top: 10px;
-}
-
-.suit_2 {
-  left: 490px;
-  top: 10px;
-}
-
-.suit_3 {
-  left: 610px;
-  top: 10px;
-}
-
-.suit_4 {
-  left: 730px;
-  top: 10px;
-}
-
-.col_1 {
+.cols {
+  position: absolute;
   left: 10px;
   top: 240px;
+
+  display: inline-flex;
+  gap: 8px;
 }
 
-.col_2 {
-  left: 130px;
-  top: 240px;
-}
-
-.col_3 {
-  left: 250px;
-  top: 240px;
-}
-
-.col_4 {
+.suits {
+  position: absolute;
   left: 370px;
-  top: 240px;
-}
+  top: 10px;
 
-.col_5 {
-  left: 490px;
-  top: 240px;
-}
-
-.col_6 {
-  left: 610px;
-  top: 240px;
-}
-
-.col_7 {
-  left: 730px;
-  top: 240px;
+  display: inline-flex;
+  gap: 8px;
 }
 
 .top_card {
