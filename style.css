@@ -1,9 +1,16 @@
+:root {
+  --suit-bg-color: #b30000;
+  --suit-bg-color: #187318;
+  --suit-bg-color: #0d32e1;
+
+  --field-bg-color: #387d38;
+}
 body {
   margin: 0;
 }
 
 .field {
-  background: #387d38;
+  background: var(--field-bg-color);
   width: 100vw;
   height: 100vh;
 }
@@ -38,16 +45,8 @@ body {
   color: black;
 }
 
-.card.red {
-  --background-color: pink;
-}
-
 .card.red > * {
   color: red;
-}
-
-.card.black {
-  --background-color: lightgray;
 }
 
 .card.black > * {
@@ -57,7 +56,7 @@ body {
 .card.close_card {
   border: 1px solid black;
   box-shadow: inset 0px 0px 0px 1px #dcdcdc, inset 0px 0px 0px 4px white;
-  background-color: #0d32e1;
+  background-color: var(--suit-bg-color);
   background-image: url(card_suit_pattern_white.png);
   background-repeat: repeat;
 }
@@ -105,11 +104,8 @@ body {
 
   border: 1px solid black;
   box-shadow: inset 0px 0px 0px 1px #dcdcdc, inset 0px 0px 0px 4px white;
-  /* todo: make different suit colors to be selectable */
-  --background-color: #506ef5;
-  --background-color: #960000;
-  --background-color: #007800;
-  background-color: #0d32e1;
+
+  background-color: var(--suit-bg-color);
   background-image: url(card_suit_pattern_white.png);
   background-repeat: repeat;
 }
