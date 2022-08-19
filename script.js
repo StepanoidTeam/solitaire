@@ -1,6 +1,18 @@
-var solitaire = function () {
-  "use strict";
-  // Обозначение карточных мастей: h – червы (hеarts), d –бубны (diamonds), c – трефы (clubs), s – пики (spades). Достоинство карт: A – туз (Ace), K – король (King), Q – дама (Queen), J – валет (Jack), T — десятка (Ten), дальше все понятно.
+function Solitaire() {
+  /* Обозначение карточных мастей: 
+  h – червы (hеarts), 
+  d –бубны (diamonds), 
+  c – трефы (clubs), 
+  s – пики (spades). 
+  Достоинство карт: 
+  A – туз (Ace), 
+  K – король (King), 
+  Q – дама (Queen), 
+  J – валет (Jack), 
+  T — десятка (Ten), 
+  дальше все понятно. */
+
+  // todo(vmyshko): gen cards in loop?
   var cards = [
     { name: "2h" },
     { name: "3h" },
@@ -15,6 +27,7 @@ var solitaire = function () {
     { name: "Qh" },
     { name: "Kh" },
     { name: "Ah" },
+    //
     { name: "2d" },
     { name: "3d" },
     { name: "4d" },
@@ -28,6 +41,7 @@ var solitaire = function () {
     { name: "Qd" },
     { name: "Kd" },
     { name: "Ad" },
+    //
     { name: "2c" },
     { name: "3c" },
     { name: "4c" },
@@ -41,6 +55,7 @@ var solitaire = function () {
     { name: "Qc" },
     { name: "Kc" },
     { name: "Ac" },
+    //
     { name: "2s" },
     { name: "3s" },
     { name: "4s" },
@@ -55,6 +70,7 @@ var solitaire = function () {
     { name: "Ks" },
     { name: "As" },
   ];
+
   var deckClose = [],
     deckOpen = [],
     column1 = [],
@@ -69,6 +85,7 @@ var solitaire = function () {
     suit3 = [],
     suit4 = [];
 
+  // todo(vmyshko): gen in loop?
   var CARDS_IN_1_COLUMN = 1,
     CARDS_IN_2_COLUMN = 2,
     CARDS_IN_3_COLUMN = 3,
@@ -76,28 +93,37 @@ var solitaire = function () {
     CARDS_IN_5_COLUMN = 5,
     CARDS_IN_6_COLUMN = 6,
     CARDS_IN_7_COLUMN = 7,
-    CARDS_IN_DECK = 24,
-    PLACE_CARD_WIDTH = 110,
-    PLACE_CARD_HEIGHT = 170;
+    CARDS_IN_DECK = 24;
 
   function random(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+
   //begin model
   function addColumnPosition() {
-    column1.position = { X: 10, Y: 240 };
-    column2.position = { X: 130, Y: 240 };
-    column3.position = { X: 250, Y: 240 };
-    column4.position = { X: 370, Y: 240 };
-    column5.position = { X: 490, Y: 240 };
-    column6.position = { X: 610, Y: 240 };
-    column7.position = { X: 730, Y: 240 };
-    suit1.position = { X: 370, Y: 10 };
-    suit2.position = { X: 490, Y: 10 };
-    suit3.position = { X: 610, Y: 10 };
-    suit4.position = { X: 730, Y: 10 };
-    deckClose.position = { X: 10, Y: 10 };
-    deckOpen.position = { X: 130, Y: 10 };
+    // todo(vmyshko): rewrite to drag'drop
+
+    function getElementXY(selector) {
+      const { top, left } = document
+        .querySelector(selector)
+        .getBoundingClientRect();
+
+      return { x: left, y: top };
+    }
+
+    [column1, column2, column3, column4, column5, column6, column7].forEach(
+      (_col, i) => {
+        _col.position = getElementXY(`.col_${i + 1}`);
+      }
+    );
+
+    [suit1, suit2, suit3, suit4].forEach((_suit, i) => {
+      _suit.position = getElementXY(`.suit_${i + 1}`);
+    });
+
+    deckClose.position = getElementXY(`.deck_close`);
+    deckOpen.position = getElementXY(`.deck_open`);
+
     suit1.nonShift =
       suit2.nonShift =
       suit3.nonShift =
@@ -130,6 +156,7 @@ var solitaire = function () {
 
   // begin view
   function createCard(card) {
+    // todo(vmyshko): use template?
     var cardName = card.name;
     var suit = cardName.slice(1);
     var weight = cardName.slice(0, 1);
@@ -207,15 +234,21 @@ var solitaire = function () {
     card.addEventListener("mousedown", function (eventDown) {
       if (!card.classList.contains("close_card")) {
         eventDown.target.classList.add("top_card");
-        document.onmousemove = function (eventMove) {
+
+        function handleMove(eventMove) {
           cardPositioner(eventDown, eventMove);
-        };
-        document.onmouseup = function (eventUp) {
+        }
+
+        document.addEventListener("mousemove", handleMove);
+
+        function handleMouseUp(eventUp) {
           pushCardInCol(eventUp, eventDown);
-          document.onmousemove = null;
+          document.removeEventListener("mousemove", handleMove);
           eventDown.target.classList.remove("top_card");
-          document.onmouseup = null;
-        };
+          document.removeEventListener("mouseup", handleMouseUp);
+        }
+
+        document.addEventListener("mouseup", handleMouseUp);
       }
     });
   }
@@ -242,10 +275,10 @@ var solitaire = function () {
   function sortCardInCol(clmns) {
     var cardShiftDown = 40;
     for (var key in clmns) {
-      var pos = clmns[key].position.Y;
+      var pos = clmns[key].position.y;
       if (clmns[key].length > 0) {
         clmns[key].forEach(function (item, i) {
-          item.div.style.left = clmns[key].position.X + "px";
+          item.div.style.left = clmns[key].position.x + "px";
           item.div.style.top = pos + "px";
           item.div.style.zIndex = i;
           if (clmns[key].length - 1 === i) {
@@ -293,6 +326,7 @@ var solitaire = function () {
     }
     downCardVal = changeValueCardToNumber(downCardVal);
     upCardVal = changeValueCardToNumber(upCardVal);
+
     if (upColumnNum <= 7) {
       moveCardToColumn(
         upColumn,
@@ -304,6 +338,7 @@ var solitaire = function () {
         upCardSuit
       );
     }
+
     if (upColumnNum > 7) {
       moveCardToColumnSuit(
         upColumn,
@@ -375,36 +410,25 @@ var solitaire = function () {
     }
   }
   function choiceColumn(column) {
-    switch (column) {
-      case 0:
-        return deckOpen;
-      case 1:
-        return column1;
-      case 2:
-        return column2;
-      case 3:
-        return column3;
-      case 4:
-        return column4;
-      case 5:
-        return column5;
-      case 6:
-        return column6;
-      case 7:
-        return column7;
-      case 8:
-        return suit1;
-      case 9:
-        return suit2;
-      case 10:
-        return suit3;
-      case 11:
-        return suit4;
-      default:
-        break;
-    }
+    const cols = [
+      deckOpen,
+      column1,
+      column2,
+      column3,
+      column4,
+      column5,
+      column6,
+      column7,
+      suit1,
+      suit2,
+      suit3,
+      suit4,
+    ];
+
+    return cols[column];
   }
 
+  // todo(vmyshko): put it to card obj
   function changeValueCardToNumber(value) {
     var numValue;
     switch (value) {
@@ -477,8 +501,23 @@ var solitaire = function () {
     return elemAndElemsUnder;
   }
 
+  // todo(vmyshko): rewrite to drag'drop
   function choiceColumnOnXandY(x, y) {
     var column;
+    // todo(vmyshko): those indexes
+    // deckOpen,
+    // column1,
+    // column2,
+    // column3,
+    // column4,
+    // column5,
+    // column6,
+    // column7,
+    // suit1,
+    // suit2,
+    // suit3,
+    // suit4,
+
     if (x > 130 && x < 240 && y > 10 && y < 180) {
       column = 0;
     }
@@ -534,7 +573,9 @@ var solitaire = function () {
       column7,
     });
   };
-};
+}
 
-var newSolitaire = new solitaire();
+// todo(vmyshko): no need for class here
+var newSolitaire = new Solitaire();
+
 newSolitaire.init();
