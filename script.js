@@ -166,22 +166,24 @@ function Solitaire() {
     var leftTopCardName = document.createElement("div");
     var rightBottomCardName = document.createElement("div");
     var centerCardName = document.createElement("div");
+
     if (suit === "h" || suit === "d") {
       cardDiv.classList.add("red");
     } else {
       cardDiv.classList.add("black");
     }
+
     card.close = true;
     cardDiv.classList.add("card");
     cardDiv.setAttribute("data-card", cardName);
-    cardDiv.classList.add("close_card");
-    leftTopCardName.classList.add("left_top_card_name");
-    rightBottomCardName.classList.add("right_bottom_card_name");
-    centerCardName.classList.add("center_card_name");
+    cardDiv.classList.add("card_closed");
+    leftTopCardName.classList.add("card__corner-top-left");
+    rightBottomCardName.classList.add("card__corner-bottom-right");
+    centerCardName.classList.add("card__center");
     leftTopCardName.innerHTML = weight + suitGraph;
     rightBottomCardName.innerHTML = weight + suitGraph;
     centerCardName.innerHTML = suitGraph;
-    moveCard(cardDiv);
+    applyDragDrop(cardDiv);
     cardDiv.appendChild(leftTopCardName);
     cardDiv.appendChild(centerCardName);
     cardDiv.appendChild(rightBottomCardName);
@@ -230,9 +232,9 @@ function Solitaire() {
     }
   });
 
-  function moveCard(card) {
+  function applyDragDrop(card) {
     card.addEventListener("mousedown", function (eventDown) {
-      if (!card.classList.contains("close_card")) {
+      if (!card.classList.contains("card_closed")) {
         eventDown.target.classList.add("top_card");
 
         function handleMove(eventMove) {
@@ -285,7 +287,7 @@ function Solitaire() {
             item.close = false;
           }
           if (!item.close) {
-            item.div.classList.remove("close_card");
+            item.div.classList.remove("card_closed");
           }
           if (!clmns[key].nonShift) {
             pos = pos + cardShiftDown;
@@ -558,9 +560,10 @@ function Solitaire() {
   }
   //end controller
   this.init = function () {
-    for (var i = 0; i < cards.length; i++) {
-      cards[i].div = createCard(cards[i]);
+    for (let _card of cards) {
+      _card.div = createCard(_card);
     }
+
     shuffleCard();
     addColumnPosition();
     sortCardInCol({

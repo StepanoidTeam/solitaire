@@ -59,7 +59,7 @@ body {
   color: black;
 }
 
-.card.close_card {
+.card.card_closed {
   border: 1px solid black;
   box-shadow: inset 0px 0px 0px 1px #dcdcdc, inset 0px 0px 0px 4px white;
   background-color: var(--suit-bg-color);
@@ -67,7 +67,7 @@ body {
   background-repeat: repeat;
 }
 
-.card.close_card > * {
+.card.card_closed > * {
   display: none;
 }
 
@@ -75,23 +75,23 @@ body {
   pointer-events: none;
 }
 
-.left_top_card_name,
-.right_bottom_card_name {
+.card__corner-top-left,
+.card__corner-bottom-right {
   padding: 8px 4px;
 
   text-orientation: upright;
   writing-mode: vertical-lr;
 }
 
-.left_top_card_name {
+.card__corner-top-left {
   align-self: flex-start;
 }
 
-.center_card_name {
+.card__center {
   font-size: 40px;
 }
 
-.right_bottom_card_name {
+.card__corner-bottom-right {
   align-self: flex-end;
   transform: rotate(180deg);
 }
@@ -127,7 +127,7 @@ body {
 
 .suits {
   position: absolute;
-  left: 370px;
+  left: 364px;
   top: 10px;
 
   display: inline-flex;
