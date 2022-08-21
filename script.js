@@ -182,17 +182,20 @@ function Solitaire() {
       //do flip
       deckOpenEl.append(topCard);
       flipCard(topCard, true);
+      audioDeckdrop.play();
     } else {
       //do reroll
       [...deckOpenEl.children].forEach((cardEl) => {
         deckCloseEl.appendChild(cardEl);
         flipCard(cardEl, false);
+        audioReroll.play();
       });
     }
   });
 
   function setupCardEvents(card) {
     card.addEventListener("dragstart", (event) => {
+      audioDraw.play();
       const draggingCard = event.target;
 
       const currentHolder = draggingCard.parentElement;
@@ -246,6 +249,8 @@ function Solitaire() {
       function unsubscribe() {
         document.removeEventListener("dragover", onDragOver);
         document.removeEventListener("dragend", onDragEnd);
+
+        audioCancel.play();
       }
 
       document.addEventListener("dragover", onDragOver);
@@ -273,16 +278,19 @@ function Solitaire() {
 
         if (isAce && emptyHolder) {
           holderEl.append(currentCard);
+          audioAutodrop.play();
           return true;
         }
 
         if (topCardEl && sameSuit && weightMoreBy1) {
           holderEl.append(currentCard);
+          audioAutodrop.play();
           return true;
         }
 
         return false;
       });
+
       // todo(vmyshko): process other possible cases, e.g. put cards on piles
 
       // todo(vmyshko): process only prev card holder?
