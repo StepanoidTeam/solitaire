@@ -71,96 +71,48 @@ function Solitaire() {
     { name: "As" },
   ];
 
-  var deckClose = [],
-    deckOpen = [],
-    column1 = [],
-    column2 = [],
-    column3 = [],
-    column4 = [],
-    column5 = [],
-    column6 = [],
-    column7 = [],
-    suit1 = [],
-    suit2 = [],
-    suit3 = [],
-    suit4 = [];
-
-  // todo(vmyshko): gen in loop?
-  var CARDS_IN_1_COLUMN = 1,
-    CARDS_IN_2_COLUMN = 2,
-    CARDS_IN_3_COLUMN = 3,
-    CARDS_IN_4_COLUMN = 4,
-    CARDS_IN_5_COLUMN = 5,
-    CARDS_IN_6_COLUMN = 6,
-    CARDS_IN_7_COLUMN = 7,
-    CARDS_IN_DECK = 24;
-
   function random(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-  //begin model
-  function addColumnPosition() {
-    // todo(vmyshko): rewrite to drag'drop
+  function flipCard(cardEl, isOpen) {
+    cardEl.classList.toggle("card_closed", !isOpen);
+    cardEl.draggable = isOpen;
+  }
 
-    function getElementXY(selector) {
-      const { top, left } = document
-        .querySelector(selector)
-        .getBoundingClientRect();
+  function shuffleCards() {
+    const CARDS_IN_COLUMN = [1, 2, 3, 4, 5, 6, 7];
+    const CARDS_IN_DECK = 24;
 
-      return { x: left, y: top };
-    }
+    const holderPiles = document.querySelectorAll(".piles>.holder");
 
-    [column1, column2, column3, column4, column5, column6, column7].forEach(
-      (_col, i) => {
-        _col.position = getElementXY(`.col_${i + 1}`);
-      }
-    );
-
-    [suit1, suit2, suit3, suit4].forEach((_suit, i) => {
-      _suit.position = getElementXY(`.suit_${i + 1}`);
+    holderPiles.forEach((holderEl, i) => {
+      addRandomCardsToHolder(holderEl, CARDS_IN_COLUMN[i]);
     });
 
-    deckClose.position = getElementXY(`.deck_close`);
-    deckOpen.position = getElementXY(`.deck_open`);
-
-    suit1.nonShift =
-      suit2.nonShift =
-      suit3.nonShift =
-      suit4.nonShift =
-      deckClose.nonShift =
-      deckOpen.nonShift =
-        true;
+    addRandomCardsToHolder(
+      document.querySelector(".deck_close"),
+      CARDS_IN_DECK
+    );
   }
 
-  function shuffleCard() {
-    column1 = firstAddCardInColumn(CARDS_IN_1_COLUMN);
-    column2 = firstAddCardInColumn(CARDS_IN_2_COLUMN);
-    column3 = firstAddCardInColumn(CARDS_IN_3_COLUMN);
-    column4 = firstAddCardInColumn(CARDS_IN_4_COLUMN);
-    column5 = firstAddCardInColumn(CARDS_IN_5_COLUMN);
-    column6 = firstAddCardInColumn(CARDS_IN_6_COLUMN);
-    column7 = firstAddCardInColumn(CARDS_IN_7_COLUMN);
-    deckClose = firstAddCardInColumn(CARDS_IN_DECK);
-  }
+  function addRandomCardsToHolder(holderEl, cardCount) {
+    if (cardCount > cards.length) throw Error("not enough cards");
 
-  function firstAddCardInColumn(cardSum) {
-    var column = [];
-    for (var i = 0; i < cardSum; i++) {
-      var number = random(0, cards.length - 1);
-      column.push(cards.splice(number, 1)[0]);
+    for (let i = 0; i < cardCount; i++) {
+      const randomCardIndex = random(0, cards.length - 1);
+      const [randomCard] = cards.splice(randomCardIndex, 1);
+
+      holderEl.append(randomCard.div);
     }
-    return column;
   }
-  // end model
 
-  const cardTemplate = document.querySelector("#card-template");
-  // begin view
   function createCard(card) {
+    const cardTemplate = document.querySelector("#card-template");
     const cardDiv = cardTemplate.content.cloneNode(true).firstElementChild;
 
-    var cardName = card.name;
-    const [weight, suit] = cardName.split("");
+    const [weight, suit] = card.name.split("");
+    cardDiv.id = card.name;
 
     var suitGraph = choiceCardPictures(suit);
     var field = document.querySelector(".field");
@@ -171,27 +123,22 @@ function Solitaire() {
     );
     const centerCardName = cardDiv.querySelector(".card__center");
 
-    if (suit === "h" || suit === "d") {
-      cardDiv.classList.add("red");
-    } else {
-      cardDiv.classList.add("black");
-    }
+    cardDiv.dataset.weight = weight;
+    cardDiv.dataset.suit = suit;
 
-    card.close = true;
-
-    cardDiv.setAttribute("data-card", cardName);
-    cardDiv.classList.add("card_closed");
+    flipCard(cardDiv, false);
 
     leftTopCardName.innerHTML = weight + suitGraph;
     rightBottomCardName.innerHTML = weight + suitGraph;
     centerCardName.innerHTML = suitGraph;
 
-    applyDragDrop(cardDiv);
+    setupCardEvents(cardDiv);
 
     field.appendChild(cardDiv);
     return cardDiv;
   }
 
+  // todo(vmyshko): remove this, render symbols in css? svg?
   function choiceCardPictures(suit) {
     var suitGraph;
     switch (suit) {
@@ -213,224 +160,138 @@ function Solitaire() {
     }
     return suitGraph;
   }
-  //end view
 
-  //begin controller
-  document.querySelector(".deck_close").addEventListener("click", function (e) {
-    if (deckClose.length > 0) {
-      deckOpen.push(deckClose.pop());
-      if (deckClose.length === 0) {
-        e.target.classList.remove("deck_close_suit");
-      }
-      sortCardInCol({ deckOpen });
+  function openLastCardInHolder(holderEl) {
+    if (holderEl.childElementCount === 0) return;
+
+    flipCard(holderEl.lastElementChild, true);
+  }
+
+  function openAllLastCards() {
+    document.querySelectorAll(".piles>.holder").forEach(openLastCardInHolder);
+  }
+
+  // deck logic
+  document.querySelector(".deck_close").addEventListener("click", (event) => {
+    const deckCloseEl = document.querySelector(".deck_close");
+    const deckOpenEl = document.querySelector(".deck_open");
+
+    const topCard = deckCloseEl.lastElementChild;
+
+    if (topCard) {
+      //do flip
+      deckOpenEl.append(topCard);
+      flipCard(topCard, true);
     } else {
-      var dol = deckOpen.length;
-      for (var i = 0; i < dol; i++) {
-        deckClose.push(deckOpen.pop());
-      }
-      sortCardInCol({ deckClose, deckOpen });
-      e.target.classList.add("deck_close_suit");
+      //do reroll
+      [...deckOpenEl.children].forEach((cardEl) => {
+        deckCloseEl.appendChild(cardEl);
+        flipCard(cardEl, false);
+      });
     }
   });
 
-  function applyDragDrop(card) {
-    card.addEventListener("mousedown", function (eventDown) {
-      if (!card.classList.contains("card_closed")) {
-        eventDown.target.classList.add("top_card");
+  function setupCardEvents(card) {
+    card.addEventListener("dragstart", (event) => {
+      const draggingCard = event.target;
 
-        function handleMove(eventMove) {
-          cardPositioner(eventDown, eventMove);
+      const currentHolder = draggingCard.parentElement;
+      const isPileHolder = currentHolder.classList.contains("holder_pile");
+      const cardsInHolder = [...currentHolder.children];
+
+      const currentCardChildIndex = cardsInHolder.indexOf(draggingCard);
+      const cardsToDrag = cardsInHolder.splice(currentCardChildIndex);
+
+      if (!isPileHolder && cardsToDrag.length > 1) {
+        // disable to drag many cards not from piles
+        event.preventDefault();
+        return;
+      }
+
+      var dragHolder = document.createElement("div");
+      dragHolder.classList.add("holder");
+
+      dragHolder.append(...cardsToDrag.map((card) => card.cloneNode(true)));
+
+      event.dataTransfer.setDragImage(
+        dragHolder,
+        event.layerX * 2,
+        event.layerY * 2
+      );
+
+      requestAnimationFrame(() => {
+        cardsToDrag.forEach((card) => (card.hidden = true));
+        dragHolder.hidden = true;
+      });
+
+      document.body.append(dragHolder);
+
+      event.dataTransfer.setData(
+        "card-ids",
+        cardsToDrag.map((card) => card.id)
+      );
+
+      function onDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+      }
+
+      function onDragEnd(event) {
+        cardsToDrag.forEach((card) => (card.hidden = false));
+
+        dragHolder.remove();
+        unsubscribe();
+      }
+
+      function unsubscribe() {
+        document.removeEventListener("dragover", onDragOver);
+        document.removeEventListener("dragend", onDragEnd);
+      }
+
+      document.addEventListener("dragover", onDragOver);
+      card.addEventListener("dragend", onDragEnd);
+    });
+
+    card.addEventListener("dblclick", (event) => {
+      const currentCard = event.target;
+
+      // check if fits to any suit
+      const suitHolders = document.querySelectorAll(".holder_suit");
+
+      [...suitHolders].some((holderEl) => {
+        const isAce = currentCard.dataset.weight === "A";
+        const emptyHolder = holderEl.childElementCount === 0;
+        const topCardEl = holderEl.lastElementChild;
+
+        const sameSuit =
+          topCardEl && topCardEl.dataset.suit === currentCard.dataset.suit;
+
+        const weightMoreBy1 =
+          topCardEl &&
+          getCardNumValue(topCardEl.dataset.weight) ===
+            getCardNumValue(currentCard.dataset.weight) - 1;
+
+        if (isAce && emptyHolder) {
+          holderEl.append(currentCard);
+          return true;
         }
 
-        document.addEventListener("mousemove", handleMove);
-
-        function handleMouseUp(eventUp) {
-          pushCardInCol(eventUp, eventDown);
-          document.removeEventListener("mousemove", handleMove);
-          eventDown.target.classList.remove("top_card");
-          document.removeEventListener("mouseup", handleMouseUp);
+        if (topCardEl && sameSuit && weightMoreBy1) {
+          holderEl.append(currentCard);
+          return true;
         }
 
-        document.addEventListener("mouseup", handleMouseUp);
-      }
+        return false;
+      });
+      // todo(vmyshko): process other possible cases, e.g. put cards on piles
+
+      // todo(vmyshko): process only prev card holder?
+      openAllLastCards();
     });
-  }
-
-  function cardPositioner(eventDown, eventMove) {
-    var elemsMove = searchElemInCol(eventDown, {
-      column1,
-      column2,
-      column3,
-      column4,
-      column5,
-      column6,
-      column7,
-    });
-    var takeCardPlace = 10; //30;
-    var positionX = eventMove.clientX - eventDown.offsetX,
-      positionY = eventMove.clientY - eventDown.offsetY;
-    elemsMove.forEach(function (item) {
-      item.div.style.left = positionX - takeCardPlace + "px";
-      item.div.style.top = positionY - takeCardPlace + "px";
-    });
-  }
-
-  function sortCardInCol(clmns) {
-    var cardShiftDown = 40;
-    for (var key in clmns) {
-      var pos = clmns[key].position.y;
-      if (clmns[key].length > 0) {
-        clmns[key].forEach(function (item, i) {
-          item.div.style.left = clmns[key].position.x + "px";
-          item.div.style.top = pos + "px";
-          item.div.style.zIndex = i;
-          if (clmns[key].length - 1 === i) {
-            item.close = false;
-          }
-          if (!item.close) {
-            item.div.classList.remove("card_closed");
-          }
-          if (!clmns[key].nonShift) {
-            pos = pos + cardShiftDown;
-          }
-        });
-      }
-    }
-  }
-
-  function pushCardInCol(eventUp, eventDown) {
-    var upX = eventUp.clientX,
-      upY = eventUp.clientY,
-      downX = eventDown.clientX,
-      downY = eventDown.clientY;
-    var upColumnNum = choiceColumnOnXandY(upX, upY),
-      downColumnNum = choiceColumnOnXandY(downX, downY);
-    var downColumn = choiceColumn(downColumnNum),
-      upColumn = choiceColumn(upColumnNum);
-    var downCardSuit, downCardVal, upCardSuit, upCardVal, clickCardNum;
-    var cardDownData = eventDown.target.getAttribute("data-card");
-
-    downColumn.forEach(function (item, i) {
-      if (item.name === cardDownData) {
-        clickCardNum = i;
-      }
-    });
-    if (
-      downColumn != undefined &&
-      clickCardNum != undefined &&
-      downColumn.length > 0
-    ) {
-      [downCardVal, downCardSuit] = downColumn[clickCardNum].name.split("");
-    }
-    if (upColumn != undefined && upColumn.length > 0) {
-      [upCardVal, upCardSuit] = upColumn[upColumn.length - 1].name.split("");
-    }
-    downCardVal = changeValueCardToNumber(downCardVal);
-    upCardVal = changeValueCardToNumber(upCardVal);
-
-    if (upColumnNum <= 7) {
-      moveCardToColumn(
-        upColumn,
-        downColumn,
-        clickCardNum,
-        upCardVal,
-        downCardVal,
-        downCardSuit,
-        upCardSuit
-      );
-    }
-
-    if (upColumnNum > 7) {
-      moveCardToColumnSuit(
-        upColumn,
-        downColumn,
-        clickCardNum,
-        upCardVal,
-        downCardVal,
-        downCardSuit,
-        upCardSuit
-      );
-    }
-    sortCardInCol({
-      column1,
-      column2,
-      column3,
-      column4,
-      column5,
-      column6,
-      column7,
-      suit1,
-      suit2,
-      suit3,
-      suit4,
-      deckOpen,
-    });
-  }
-
-  function moveCardToColumn(
-    upColumn,
-    downColumn,
-    clickCardNum,
-    upCardVal,
-    downCardVal,
-    downCardSuit,
-    upCardSuit
-  ) {
-    var dCL = downColumn.length,
-      cCN = clickCardNum;
-    var king = 13;
-    if (
-      +upCardVal - 1 === +downCardVal &&
-      compareSuit(downCardSuit, upCardSuit)
-    ) {
-      for (var j = cCN; j < dCL; j++) {
-        upColumn.push(downColumn.splice(cCN, 1)[0]);
-      }
-    }
-    if (upCardVal === undefined && downCardVal === king) {
-      for (var j = cCN; j < dCL; j++) {
-        upColumn.push(downColumn.splice(cCN, 1)[0]);
-      }
-    }
-  }
-
-  function moveCardToColumnSuit(
-    upColumn,
-    downColumn,
-    clickCardNum,
-    upCardVal,
-    downCardVal,
-    downCardSuit,
-    upCardSuit
-  ) {
-    if (upCardVal === undefined && downCardVal === 1) {
-      upColumn.push(downColumn.pop());
-    }
-    if (+upCardVal === +downCardVal - 1 && upCardSuit === downCardSuit) {
-      upColumn.push(downColumn.pop());
-    }
-  }
-  function choiceColumn(column) {
-    const cols = [
-      deckOpen,
-      column1,
-      column2,
-      column3,
-      column4,
-      column5,
-      column6,
-      column7,
-      suit1,
-      suit2,
-      suit3,
-      suit4,
-    ];
-
-    return cols[column];
   }
 
   // todo(vmyshko): put it to card obj
-  function changeValueCardToNumber(value) {
+  function getCardNumValue(value) {
     var numValue;
     switch (value) {
       case "A":
@@ -449,131 +310,93 @@ function Solitaire() {
         numValue = 10;
         break;
       default:
-        numValue = value;
+        numValue = +value;
         break;
     }
     return numValue;
   }
 
-  function compareSuit(downCardSuit, upCardSuit) {
-    if (
-      setCompareSuitAntipod(downCardSuit) === setCompareSuitAntipod(upCardSuit)
-    ) {
-      return false;
-    } else {
-      return true;
-    }
+  function colorsDiffer(downCardSuit, upCardSuit) {
+    return (
+      ["h", "d"].includes(downCardSuit) !== ["h", "d"].includes(upCardSuit)
+    );
   }
 
-  function setCompareSuitAntipod(suit) {
-    var suitColor;
-    switch (suit) {
-      case "h":
-        suitColor = "red";
-        break;
-      case "d":
-        suitColor = "red";
-        break;
-      case "c":
-        suitColor = "black";
-        break;
-      case "s":
-        suitColor = "black";
-        break;
-      default:
-        console.log("switch suit color error");
-        break;
-    }
-    return suitColor;
-  }
-
-  function searchElemInCol(event, columns) {
-    var elemAndElemsUnder = [];
-    var cols = choiceColumn(choiceColumnOnXandY(event.clientX, event.clientY));
-    if (cols !== undefined) {
-      cols.forEach(function (item, i) {
-        if (item.div === event.target) {
-          for (var k = i; k < cols.length; k++) {
-            elemAndElemsUnder.push(cols[k]);
-          }
-        }
-      });
-    }
-    return elemAndElemsUnder;
-  }
-
-  // todo(vmyshko): rewrite to drag'drop
-  function choiceColumnOnXandY(x, y) {
-    var column;
-    // todo(vmyshko): those indexes
-    // deckOpen,
-    // column1,
-    // column2,
-    // column3,
-    // column4,
-    // column5,
-    // column6,
-    // column7,
-    // suit1,
-    // suit2,
-    // suit3,
-    // suit4,
-
-    if (x > 130 && x < 240 && y > 10 && y < 180) {
-      column = 0;
-    }
-    if (x > 10 && x < 120 && y > 240) {
-      column = 1;
-    }
-    if (x > 130 && x < 240 && y > 240) {
-      column = 2;
-    }
-    if (x > 250 && x < 360 && y > 240) {
-      column = 3;
-    }
-    if (x > 370 && x < 480 && y > 240) {
-      column = 4;
-    }
-    if (x > 490 && x < 600 && y > 240) {
-      column = 5;
-    }
-    if (x > 610 && x < 720 && y > 240) {
-      column = 6;
-    }
-    if (x > 730 && x < 840 && y > 240) {
-      column = 7;
-    }
-    if (x > 370 && x < 480 && y > 10 && y < 180) {
-      column = 8;
-    }
-    if (x > 490 && x < 600 && y > 10 && y < 180) {
-      column = 9;
-    }
-    if (x > 610 && x < 720 && y > 10 && y < 180) {
-      column = 10;
-    }
-    if (x > 730 && x < 840 && y > 10 && y < 180) {
-      column = 11;
-    }
-    return column;
-  }
-  //end controller
+  // todo(vmyshko): is it possible to restart?
   this.init = function () {
     for (let _card of cards) {
       _card.div = createCard(_card);
     }
 
-    shuffleCard();
-    addColumnPosition();
-    sortCardInCol({
-      column1,
-      column2,
-      column3,
-      column4,
-      column5,
-      column6,
-      column7,
+    const placeholders = document.querySelectorAll(".holder");
+
+    placeholders.forEach((holderEl) => {
+      holderEl.addEventListener("dragover", (event) => {
+        event.preventDefault();
+      });
+
+      holderEl.addEventListener("drop", (event) => {
+        const targetEl = event.target;
+        const cardIds = event.dataTransfer.getData("card-ids").split(",");
+
+        const dropCards = cardIds.map((cardId) =>
+          document.getElementById(cardId)
+        );
+
+        const [dropCardEl] = dropCards;
+
+        // rule flags
+        const holderIsPile = holderEl.classList.contains("holder_pile");
+        const holderIsSuit = holderEl.classList.contains("holder_suit");
+
+        const dropsToHolder = targetEl.classList.contains("holder");
+        const dropsToCard = targetEl.classList.contains("card");
+
+        const differentColors = colorsDiffer(
+          targetEl.dataset.suit,
+          dropCardEl.dataset.suit
+        );
+        const sameSuit = targetEl.dataset.suit === dropCardEl.dataset.suit;
+
+        const isKing = dropCardEl.dataset.weight === "K";
+        const isAce = dropCardEl.dataset.weight === "A";
+
+        const weightLessBy1 =
+          getCardNumValue(targetEl.dataset.weight) ===
+          getCardNumValue(dropCardEl.dataset.weight) + 1;
+        const weightMoreBy1 =
+          getCardNumValue(targetEl.dataset.weight) ===
+          getCardNumValue(dropCardEl.dataset.weight) - 1;
+
+        // check rules
+
+        if (holderIsPile) {
+          if (dropsToHolder && isKing) {
+            holderEl.append(...dropCards);
+          }
+
+          if (dropsToCard && differentColors && weightLessBy1) {
+            holderEl.append(...dropCards);
+          }
+        }
+
+        if (holderIsSuit && dropCards.length === 1) {
+          if (dropsToHolder && isAce) {
+            holderEl.append(...dropCards);
+          }
+
+          if (dropsToCard && sameSuit && weightMoreBy1) {
+            holderEl.append(...dropCards);
+          }
+        }
+
+        // todo(vmyshko): process only prev card holder?
+        openAllLastCards();
+      });
     });
+
+    shuffleCards();
+    openAllLastCards();
   };
 }
 

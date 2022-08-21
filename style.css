@@ -10,15 +10,67 @@
 
 body {
   margin: 0;
+  width: 100vw;
+  height: 100vh;
+
+  background-color: var(--field-bg-color);
+}
+
+.field-container {
+  display: flex;
+  justify-content: center;
 }
 
 .field {
-  background: var(--field-bg-color);
-  width: 100vw;
-  height: 100vh;
+  /* display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  grid-column-gap: 0px;
+  grid-row-gap: 0px; */
+
+  display: inline-flex;
+  flex-direction: column;
+  gap: 64px;
+
+  padding-top: 20px;
+}
+
+.field__top {
+  display: flex;
+  flex-direction: row;
+
+  justify-content: space-between;
+}
+
+.decks {
+  /* position: absolute;
+  left: 10px;
+  top: 10px; */
+
+  display: inline-flex;
+  gap: 8px;
+}
+
+.piles {
+  /* position: absolute;
+  left: 10px;
+  top: 240px; */
+
+  display: inline-flex;
+  gap: 8px;
+}
+
+.suits {
+  /* position: absolute;
+  left: 364px;
+  top: 10px; */
+
+  display: inline-flex;
+  gap: 8px;
 }
 
 .holder {
+  display: grid;
   width: 110px;
   height: 170px;
 
@@ -29,6 +81,26 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: inset 2px 2px 4px 0px rgba(0, 0, 0, 0.45);
   background-color: #00000012;
+
+  /* default? */
+  grid-template-rows: repeat(20, 45px);
+}
+
+/*  todo: use this new approach for stacking cards in pile */
+.decks .holder {
+  grid-template-rows: repeat(24, 2px);
+}
+.suits .holder {
+  grid-template-rows: repeat(13, 3px);
+}
+
+.piles .holder {
+  grid-template-rows: repeat(20, 45px);
+}
+
+.holder > .card {
+  position: initial;
+  z-index: initial !important;
 }
 
 .card {
@@ -49,13 +121,22 @@ body {
   background-color: white;
 
   font-family: "Noto Sans JP", sans-serif;
+
+  /* to prevent rotated text to fail with z-index */
+  transform-style: preserve-3d;
 }
 
-.card.red {
+*[hidden] {
+  display: none;
+}
+
+.card[data-suit="h"],
+.card[data-suit="d"] {
   color: red;
 }
 
-.card.black {
+.card[data-suit="s"],
+.card[data-suit="c"] {
   color: black;
 }
 
@@ -94,47 +175,4 @@ body {
 .card__corner-bottom-right {
   align-self: flex-end;
   transform: rotate(180deg);
-}
-
-.deck_close_suit {
-  z-index: 100;
-
-  /* todo: remove duplicate styles */
-  border: 1px solid black;
-  box-shadow: inset 0px 0px 0px 1px #dcdcdc, inset 0px 0px 0px 4px white;
-
-  background-color: var(--suit-bg-color);
-  background-image: url(card_suit_pattern_white.png);
-  background-repeat: repeat;
-}
-
-.decks {
-  position: absolute;
-  left: 10px;
-  top: 10px;
-
-  display: inline-flex;
-  gap: 8px;
-}
-
-.piles {
-  position: absolute;
-  left: 10px;
-  top: 240px;
-
-  display: inline-flex;
-  gap: 8px;
-}
-
-.suits {
-  position: absolute;
-  left: 364px;
-  top: 10px;
-
-  display: inline-flex;
-  gap: 8px;
-}
-
-.top_card {
-  z-index: 50 !important;
 }
