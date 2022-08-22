@@ -1,1 +1,1 @@
-#  https://iambft.github.io/solitaire/
+#  https://stepanoidteam.github.io/solitaire/
