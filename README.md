@@ -1,1 +1,3 @@
-#  https://stepanoidteam.github.io/solitaire/
+# Demo
+
+##  https://stepanoidteam.github.io/solitaire/
